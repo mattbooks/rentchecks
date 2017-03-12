@@ -1,0 +1,18 @@
+#!/usr/bin/env ruby
+
+require 'yaml'
+
+config = YAML.load_file("config/settings.yaml")
+
+version = config['version']
+bucket = config['bucket']
+
+puts "Packaging code"
+
+`mvn package`
+
+puts "Copying code version: #{version} to S3 bucket: #{bucket}"
+
+`aws s3api create-bucket --bucket #{bucket}`
+
+`aws s3 cp target/rentchecks-#{version}.jar s3://#{bucket}/rentchecks.jar`

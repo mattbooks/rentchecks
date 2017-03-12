@@ -1,0 +1,18 @@
+#!/usr/bin/env ruby
+
+require 'yaml'
+
+config = YAML.load_file("config/settings.yaml")
+
+bucket = config['bucket']
+
+`aws lambda create-function \
+  --function-name mail-rentchecks \
+  --runtime java8 \
+  --role TODO \
+  --handler org.mattbooks.rentchecks.lob.LobCheckMailer \
+  --code S3Bucket=#{bucket},S3Key=rentchecks.jar \
+  --description "Function that mails a rent check using Lob" \
+  --memory-size 256 \
+  --timeout 20 \
+  --publish`
