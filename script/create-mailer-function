@@ -1,15 +1,49 @@
 #!/usr/bin/env ruby
 
+require 'json'
 require 'yaml'
+
+ROLE_NAME = 'org-mattbooks-rentchecks'
 
 config = YAML.load_file("config/settings.yaml")
 
 bucket = config['bucket']
 
+def get_role
+  JSON.parse(`aws iam get-role --role-name #{ROLE_NAME}`)
+end
+
+role = nil
+
+begin
+  puts "Checking for existing role"
+  role = get_role
+
+  puts "Checking for appropriate service"
+  service = role.dig('Role', 'AssumeRolePolicyDocument', 'Statement')&.first&.dig('Principal', 'Service')
+
+  if service != 'lambda.amazonaws.com'
+    STDERR.puts "Detected unexpected service: #{service}, expected lambda.amazonaws.com for role: #{ROLE_NAME}"
+    STDERR.puts "Please fix this yourself (eg, delete it)"
+    exit 1
+  end
+rescue JSON::ParserError
+  puts "Didn't find role, creating"
+  policy_doc = '{"Version":"2012-10-17","Statement":[{"Effect":"Allow","Principal":{"Service":["lambda.amazonaws.com"]},"Action":["sts:AssumeRole"]}]}'
+  role = `aws iam create-role --role-name=org-mattbooks-rentchecks --assume-role-policy-document='#{policy_doc}'`
+end
+
+puts "Attaching lambda exec policy"
+`aws iam attach-role-policy --role-name #{ROLE_NAME} --policy-arn arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole`
+`aws iam attach-role-policy --role-name #{ROLE_NAME} --policy-arn arn:aws:iam::aws:policy/AmazonS3ReadOnlyAccess`
+
+role_arn = role.dig('Role', 'Arn')
+
+puts "Creating function"
 `aws lambda create-function \
   --function-name mail-rentchecks \
   --runtime java8 \
-  --role TODO \
+  --role #{role_arn} \
   --handler org.mattbooks.rentchecks.lob.LobCheckMailer \
   --code S3Bucket=#{bucket},S3Key=rentchecks.jar \
   --description "Function that mails a rent check using Lob" \

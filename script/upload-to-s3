@@ -11,8 +11,10 @@ puts "Packaging code"
 
 `mvn package`
 
-puts "Copying code version: #{version} to S3 bucket: #{bucket}"
+puts "Creating S3 bucket: #{bucket} if it doesn't exist"
 
-`aws s3api create-bucket --bucket #{bucket}`
+`aws s3api create-bucket --bucket #{bucket} --create-bucket-configuration LocationConstraint=us-west-2`
+
+puts "Copying code version: #{version} to S3 bucket: #{bucket}"
 
 `aws s3 cp target/rentchecks-#{version}.jar s3://#{bucket}/rentchecks.jar`
