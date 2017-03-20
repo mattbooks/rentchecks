@@ -14,13 +14,9 @@ import java.util.concurrent.ExecutionException;
 import org.joda.money.CurrencyUnit;
 import org.joda.money.Money;
 import org.mattbooks.rentchecks.helpers.Time;
+import org.mattbooks.rentchecks.settings.Settings;
 
 public class LobCheckMailer implements RequestHandler<Request, Response> {
-  private static final String LOB_API_KEY_VAR = "LOB_API_KEY";
-  private static final String LOB_FROM_ADDRESS_TOKEN_VAR = "FROM_ADDRESS_TOKEN";
-  private static final String LOB_TO_ADDRESS_TOKEN_VAR = "TO_ADDRESS_TOKEN";
-  private static final String LOB_BANK_ACCOUNT_TOKEN_VAR = "BANK_ACCOUNT_TOKEN";
-  private static final String LOB_RENT_AMOUNT_VAR = "RENT_AMOUNT";
   private final LobClient lob;
   private final String fromAddressToken;
   private final String toAddressToken;
@@ -30,12 +26,12 @@ public class LobCheckMailer implements RequestHandler<Request, Response> {
   public LobCheckMailer() {
     Map<String, String> env = System.getenv();
 
-    lob = AsyncLobClient.create(env.get(LOB_API_KEY_VAR),
+    lob = AsyncLobClient.create(Settings.lobApiKey(),
         new AsyncHttpClientConfig.Builder().setConnectionTimeoutInMs(5000).build());
-    fromAddressToken = env.get(LOB_FROM_ADDRESS_TOKEN_VAR);
-    toAddressToken = env.get(LOB_TO_ADDRESS_TOKEN_VAR);
-    bankAccountToken = env.get(LOB_BANK_ACCOUNT_TOKEN_VAR);
-    rentAmount = Money.of(CurrencyUnit.USD, Integer.valueOf(env.get(LOB_RENT_AMOUNT_VAR)));
+    fromAddressToken = Settings.fromAddressToken();
+    toAddressToken = Settings.toAddressToken();
+    bankAccountToken = Settings.bankAccountToken();
+    rentAmount = Money.of(CurrencyUnit.USD, Settings.rentAmount());
   }
 
   public Response handleRequest(Request request, Context context) {
