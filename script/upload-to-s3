@@ -7,10 +7,6 @@ config = YAML.load_file("config/settings.yaml")
 version = config['version']
 bucket = config['bucket']
 
-puts "Packaging code"
-
-`mvn package`
-
 puts "Creating S3 bucket: #{bucket} if it doesn't exist"
 
 `aws s3api create-bucket --bucket #{bucket} --create-bucket-configuration LocationConstraint=us-west-2`
@@ -18,3 +14,5 @@ puts "Creating S3 bucket: #{bucket} if it doesn't exist"
 puts "Copying code version: #{version} to S3 bucket: #{bucket}"
 
 `aws s3 cp target/rentchecks-#{version}.jar s3://#{bucket}/rentchecks.jar`
+
+`aws lambda update-function-code --function-name mail-rentchecks --s3-bucket #{bucket} --s3-key rentchecks.jar`

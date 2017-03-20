@@ -1,3 +1,6 @@
 bucket: mattbooks-rentchecks-code
 version: "1.0"
+mailer_function_name: mail-rentchecks
+status_function_name: rentchecks-status
+api_name: mattbooks-rentchecks-api
 

@@ -8,6 +8,8 @@ ROLE_NAME = 'org-mattbooks-rentchecks'
 config = YAML.load_file("config/settings.yaml")
 
 bucket = config['bucket']
+mailer_function_name = config['mailer_function_name']
+status_function_name = config['status_function_name']
 
 def get_role
   JSON.parse(`aws iam get-role --role-name #{ROLE_NAME}`)
@@ -39,9 +41,9 @@ puts "Attaching lambda exec policy"
 
 role_arn = role.dig('Role', 'Arn')
 
-puts "Creating function"
+puts "Creating check mailer function"
 `aws lambda create-function \
-  --function-name mail-rentchecks \
+  --function-name #{mailer_function_name} \
   --runtime java8 \
   --role #{role_arn} \
   --handler org.mattbooks.rentchecks.lob.LobCheckMailer \
@@ -50,3 +52,19 @@ puts "Creating function"
   --memory-size 256 \
   --timeout 20 \
   --publish`
+
+puts "Creating check status function"
+`aws lambda create-function \
+  --function-name #{status_function_name} \
+  --runtime java8 \
+  --role #{role_arn} \
+  --handler org.mattbooks.rentchecks.email.Emailer \
+  --code S3Bucket=#{bucket},S3Key=rentchecks.jar \
+  --description "Function that sends a status update for rent checks" \
+  --memory-size 256 \
+  --timeout 20 \
+  --publish`
+
+`aws lambda update-function-configuration --environment 'Variables={LOB_API_KEY=FILL_ME_IN,FROM_ADDRESS_TOKEN=FILL_ME_IN,TO_ADDRESS_TOKEN=FILL_ME_IN,BANK_ACCOUNT_TOKEN=FILL_ME_IN,RENT_AMOUNT=FILL_ME_IN}' --function-name #{mailer_function_name}`
+
+`aws lambda update-function-configuration --environment 'Variables={EMAIL=FILL_ME_IN,FROM_EMAIL_PASSWORD=FILL_ME_IN,TO_EMAIL=FILL_ME_IN}' --function-name #{status_function_name}`
