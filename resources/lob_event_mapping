@@ -1,0 +1,4 @@
+#set($inputRoot = $input.path('$'))
+{
+  "eventType" : "$input.path('$.event_type.id')"
+}
