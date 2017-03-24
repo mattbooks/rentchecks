@@ -1,4 +1,9 @@
 #set($inputRoot = $input.path('$'))
 {
-  "eventType" : "$input.path('$.event_type.id')"
+  "eventType" : "$input.path('$.event_type.id')",
+  "amount" : "$input.path('$.body.amount')",
+  "memo" : "$input.path('$.body.memo')",
+  "to" : "$input.path('$.body.to.address_line1')",
+  "from" : "$input.path('$.body.to.address_line1')",
+  "deliveryDate": "$input.path('$.body.expected_delivery_date')"
 }

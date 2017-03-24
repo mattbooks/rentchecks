@@ -1,5 +1,4 @@
 TODO:
-* Add month + expected delivery date to emails
 * Secure API Gateway
 * Make sure I get notified if anything breaks
 

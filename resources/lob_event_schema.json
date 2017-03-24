@@ -1,6 +1,26 @@
 {
   "type": "object",
   "properties": {
+    "body": {
+      "type": "object",
+      "properties": {
+        "memo": {"type": "string"},
+        "amount": {"type": "number"},
+        "expected_delivery_date": {"type": "string"},
+        "to": {
+          "type": "object",
+          "properties": {
+            "address_line1": {"type": "string"}
+          }
+        },
+        "from": {
+          "type": "object",
+          "properties": {
+            "address_line1": {"type": "string"}
+          }
+        }
+      }
+    },
     "event_type": {
       "type": "object",
       "properties": {
